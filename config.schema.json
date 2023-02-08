@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "DaitsuATW",
   "pluginType": "platform",
   "singular": true,
   "schema": {
@@ -8,8 +8,30 @@
       "name": {
         "title": "Name",
         "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "DaitsuATW"
+      },
+      "port": {
+        "title": "Port",
+        "type": "integer",
+        "default": 7002,
+        "description": "UDP socket server port to bind"
+      },
+      "scanAddress": {
+        "title": "Scan Address, not target device address",
+        "type": "string",
+        "format": "ipv4",
+        "default": "192.168.1.255"
+      },
+      "scanCount": {
+        "title": "Scan count",
+        "type": "integer",
+        "placeholder": 10,
+        "minimum": 3
+      },
+      "mac": {
+        "title": "Mac Address (Serial Number)",
+        "type": "string",
+        "default": "502cc676ce2a"
       }
     }
   }

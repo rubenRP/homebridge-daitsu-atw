@@ -1,16 +1,16 @@
 {
   "private": true,
-  "displayName": "Plugin Name",
-  "name": "homebridge-plugin-name",
-  "version": "1.0.0",
+  "displayName": "Daitsu ATW Homebridge Plugin",
+  "name": "homebridge-daitsu-atw",
+  "version": "0.0.1",
   "description": "A short description about what your plugin does.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "https://github.com/rubenRP/homebridge-daitsu-atw"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/rubenRP/homebridge-daitsu-atw/issues"
   },
   "engines": {
     "node": ">=14.18.1",

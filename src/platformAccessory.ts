@@ -1,141 +1,212 @@
-import { Service, PlatformAccessory, CharacteristicValue } from 'homebridge';
+import { Socket } from "dgram";
+import { PlatformAccessory, Service } from "homebridge";
+import commands from "./commands";
+import crypto from "./crypto";
 
-import { ExampleHomebridgePlatform } from './platform';
+import { DaitsuPlatform } from "./platform";
+import { DEFAULT_PLATFORM_CONFIG } from "./settings";
 
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
  * Each accessory may expose multiple services of different service types.
  */
-export class ExamplePlatformAccessory {
-  private service: Service;
+export class DaitsuATW {
+  private HeaterCoolerThermostat: Service;
 
-  /**
-   * These are just used to create a working example
-   * You should implement your own code to track the state of your accessory
-   */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
-  };
+  private key: string | undefined;
+  public socket: Socket;
+  private binded: boolean;
+  private isPending: boolean;
+  private updateTimer: NodeJS.Timeout | undefined;
+  private cols: Array<string> | undefined;
+  private status: Record<string, unknown>;
 
   constructor(
-    private readonly platform: ExampleHomebridgePlatform,
+    public readonly platform: DaitsuPlatform,
     private readonly accessory: PlatformAccessory,
+    private readonly deviceConfig: any
   ) {
-
+    this.socket = platform.socket;
+    this.binded = false;
+    this.isPending = false;
+    this.key = undefined;
+    this.status = {};
+    // register event handler
+    this.socket.on("message", this.handleMessage);
+    // try to bind device;
+    this.sendBindRequest();
     // set accessory information
-    this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Default-Manufacturer')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Default-Serial');
+    this.accessory
+      .getService(this.platform.Service.AccessoryInformation)!
+      .setCharacteristic(
+        this.platform.Characteristic.Manufacturer,
+        this.accessory.context.device.brand
+      )
+      .setCharacteristic(
+        this.platform.Characteristic.Model,
+        this.accessory.context.device.name ||
+          this.accessory.context.device.model ||
+          "Daitsu"
+      )
+      .setCharacteristic(this.platform.Characteristic.Name, this.getName())
+      .setCharacteristic(
+        this.platform.Characteristic.SerialNumber,
+        this.accessory.context.device.mac
+      )
+      .setCharacteristic(
+        this.platform.Characteristic.FirmwareRevision,
+        this.accessory.context.device.ver
+      );
 
-    // get the LightBulb service if it exists, otherwise create a new LightBulb service
-    // you can create multiple services for each accessory
-    this.service = this.accessory.getService(this.platform.Service.Lightbulb) || this.accessory.addService(this.platform.Service.Lightbulb);
-
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.exampleDisplayName);
-
-    // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
-
-    // register handlers for the On/Off Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setOn.bind(this))                // SET - bind to the `setOn` method below
-      .onGet(this.getOn.bind(this));               // GET - bind to the `getOn` method below
-
-    // register handlers for the Brightness Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this));       // SET - bind to the 'setBrightness` method below
-
-    /**
-     * Creating multiple services of the same type.
-     *
-     * To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
-     * when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
-     * this.accessory.getService('NAME') || this.accessory.addService(this.platform.Service.Lightbulb, 'NAME', 'USER_DEFINED_SUBTYPE_ID');
-     *
-     * The USER_DEFINED_SUBTYPE must be unique to the platform accessory (if you platform exposes multiple accessories, each accessory
-     * can use the same sub type id.)
-     */
-
-    // Example: add two "motion sensor" services to the accessory
-    const motionSensorOneService = this.accessory.getService('Motion Sensor One Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
-
-    const motionSensorTwoService = this.accessory.getService('Motion Sensor Two Name') ||
-      this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor Two Name', 'YourUniqueIdentifier-2');
-
-    /**
-     * Updating characteristics values asynchronously.
-     *
-     * Example showing how to update the state of a Characteristic asynchronously instead
-     * of using the `on('get')` handlers.
-     * Here we change update the motion sensor trigger states on and off every 10 seconds
-     * the `updateCharacteristic` method.
-     *
-     */
-    let motionDetected = false;
-    setInterval(() => {
-      // EXAMPLE - inverse the trigger
-      motionDetected = !motionDetected;
-
-      // push the new value to HomeKit
-      motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-      motionSensorTwoService.updateCharacteristic(this.platform.Characteristic.MotionDetected, !motionDetected);
-
-      this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
-      this.platform.log.debug('Triggering motionSensorTwoService:', !motionDetected);
-    }, 10000);
+    this.HeaterCoolerThermostat =
+      this.accessory.getService("Mode") ||
+      this.accessory.addService(this.platform.Service.HeaterCooler, "Mode");
   }
 
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
-   */
-  async setOn(value: CharacteristicValue) {
-    // implement your own code to turn your device on/off
-    this.exampleStates.On = value as boolean;
-
-    this.platform.log.debug('Set Characteristic On ->', value);
+  sendMessage(message) {
+    const pack = crypto.encrypt(message, this.key);
+    const payload = {
+      cid: "app",
+      i: this.key === undefined ? 1 : 0,
+      t: "pack",
+      uid: 0,
+      tcid: this.getMac(),
+      pack,
+    };
+    /* this.platform.log.debug(
+      `[${this.getDeviceLabel()}] send request: %j, %j`,
+      payload,
+      message
+    ); */
+    try {
+      this.platform.socket.send(
+        JSON.stringify(payload),
+        this.getPort(),
+        this.getAddress()
+      );
+    } catch (err) {
+      this.platform.log.error(err as string);
+    }
   }
 
-  /**
-   * Handle the "GET" requests from HomeKit
-   * These are sent when HomeKit wants to know the current state of the accessory, for example, checking if a Light bulb is on.
-   *
-   * GET requests should return as fast as possbile. A long delay here will result in
-   * HomeKit being unresponsive and a bad user experience in general.
-   *
-   * If your device takes time to respond you should update the status of your device
-   * asynchronously instead using the `updateCharacteristic` method instead.
+  handleMessage = (msg, rinfo) => {
+    if (this.getAddress() === rinfo.address) {
+      const message = JSON.parse(msg.toString());
+      // this.platform.log.debug(`[${this.getDeviceLabel()}] handle message: %j`, message);
+      const pack = crypto.decrypt(
+        message.pack,
+        message.i === 1 ? undefined : this.key
+      );
+      this.platform.log.debug("[DaitsuATW] handle message: %j", pack.t);
+      switch (pack.t) {
+        case "bindok":
+          this.key = pack.key;
+          this.binded = true;
+          this.platform.log.info(
+            `[${this.getDeviceLabel()}] Device binded. ${this.key}`
+          );
+          this.afterBinded();
+          break;
+        case "dat": // update status
+          this.platform.log.debug("[DaitsuATW] handle message: %j", pack);
+          this.updateStatus(fieldsToObject(pack.cols, pack.dat));
+          break;
+        case "res": // command response
+          this.updateStatus(fieldsToObject(pack.opt, pack.p || pack.val));
+          break;
+        case "dev":
+          break;
+        default:
+          this.platform.log.debug(pack);
+      }
+    }
+  };
 
-   * @example
-   * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
-   */
-  async getOn(): Promise<CharacteristicValue> {
-    // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
-
-    this.platform.log.debug('Get Characteristic On ->', isOn);
-
-    // if you need to return an error to show the device as "Not Responding" in the Home app:
-    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-
-    return isOn;
+  sendBindRequest() {
+    const message = {
+      mac: this.getMac(),
+      t: "bind",
+      uid: 0,
+    };
+    this.platform.log.debug(`Bind to device: ${this.getMac()}`);
+    this.sendMessage(message);
   }
 
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, changing the Brightness
-   */
-  async setBrightness(value: CharacteristicValue) {
-    // implement your own code to set the brightness
-    this.exampleStates.Brightness = value as number;
-
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+  requestDeviceStatus() {
+    this.platform.log.debug(`[${this.getDeviceLabel()}] requestDeviceStatus`);
+    const message = {
+      mac: this.getMac(),
+      t: "status",
+      cols: this.getCols(),
+    };
+    this.sendMessage(message);
   }
 
+  updateStatus(patch) {
+    this.platform.log.info(
+      `[${this.getDeviceLabel()}] Update Status: %j`,
+      patch
+    );
+    this.status = {
+      ...this.status,
+      ...patch,
+    };
+    this.isPending = false;
+  }
+
+  afterBinded() {
+    if (this.updateTimer) {
+      clearInterval(this.updateTimer);
+    }
+    this.requestDeviceStatus();
+    this.updateTimer = setInterval(() => {
+      this.requestDeviceStatus();
+    }, this.getConfig("statusUpdateInterval") * 1000);
+  }
+
+  getMac() {
+    return this.accessory.context.device.mac;
+  }
+
+  getAddress() {
+    return this.accessory.context.device.address;
+  }
+
+  getPort() {
+    return this.accessory.context.device.port;
+  }
+
+  getName() {
+    return this.deviceConfig?.name || this.accessory.context.device.name;
+  }
+
+  getCols() {
+    // TODO: may config features based on some static database;
+    if (!this.cols) {
+      this.platform.log.info(`Cols Received: ${this.cols}`);
+      this.cols = Object.keys(commands).map((k) => commands[k].code);
+    }
+    return this.cols;
+  }
+
+  getConfig(key) {
+    return (
+      this.deviceConfig?.[key] ??
+      this.platform.config.defaultValue?.[key] ??
+      DEFAULT_PLATFORM_CONFIG[key]
+    );
+  }
+
+  getDeviceLabel() {
+    return `${this.getMac()} -- ${this.getAddress()}:${this.getPort()}`;
+  }
+}
+
+function fieldsToObject(cols: any, values: any): any {
+  const obj = {};
+  cols.forEach((key, i) => {
+    obj[key] = values[i];
+  });
+  return obj;
 }

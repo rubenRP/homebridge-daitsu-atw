@@ -1,9 +1,19 @@
-/**
- * This is the name of the platform that users will use to register the plugin in the Homebridge config.json
- */
-export const PLATFORM_NAME = 'ExampleHomebridgePlugin';
+export const PLATFORM_NAME = "DaitsuATW";
+export const ACCESSORY_NAME = "ATW";
+export const PLUGIN_NAME = "homebridge-daitsu-atw";
 
-/**
- * This must match the name of your plugin as defined the package.json
- */
-export const PLUGIN_NAME = 'homebridge-plugin-name';
+//TODO - define config schema
+export const DEFAULT_DEVICE_CONFIG: any = {};
+
+export const DEFAULT_PLATFORM_CONFIG = {
+  name: "Daitsu ATW",
+  port: 7002,
+  scanAddress: "192.168.1.255",
+  scanCount: 10,
+  scanTimeout: 3000,
+  mac: "502cc676ce2a",
+  defaultValue: DEFAULT_DEVICE_CONFIG,
+  statusUpdateInterval: 30,
+};
+
+export const UDP_SCAN_PORT = 7000;

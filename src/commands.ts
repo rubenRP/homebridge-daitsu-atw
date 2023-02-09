@@ -1,122 +1,122 @@
 const commands = {
   allInWaterTempHigh: {
-    code: "AllInWatTemHig",
+    code: 'AllInWatTemHig',
   },
   allInWaterTempLow: {
-    code: "AllInWatTemLow",
+    code: 'AllInWatTemLow',
   },
   allOutWaterTempHigh: {
-    code: "AllOutWatTemHig",
+    code: 'AllOutWatTemHig',
   },
   allOutWaterTempLow: {
-    code: "AllOutWatTemLow",
+    code: 'AllOutWatTemLow',
   },
   hepOutWaterTempHigh: {
-    code: "HepOutWatTemHig",
+    code: 'HepOutWatTemHi',
   },
   hepOutWaterTempLow: {
-    code: "HepOutWatTemLow",
+    code: 'HepOutWatTemLo',
   },
-  waaterBoxTempHigh: {
-    code: "WatBoxTemHig",
+  waterBoxTempHigh: {
+    code: 'WatBoxTemHi',
   },
-  waaterBoxTempLow: {
-    code: "WatBoxTemLow",
+  waterBoxTempLow: {
+    code: 'WatBoxTemLo',
   },
   roomTempHigh: {
-    code: "RmoHomTemHi",
+    code: 'RmoHomTemHi',
   },
   roomTempLow: {
-    code: "RmoHomTemLo",
+    code: 'RmoHomTemLo',
   },
   waterBoxElectricHeaterRunStatus: {
-    code: "WatBoxElcHeRunSta",
+    code: 'WatBoxElcHeRunSta',
   },
   systemAntiFrostRunStatus: {
-    code: "SyAnFroRunSta",
+    code: 'SyAnFroRunSta',
   },
   electricHeater1RunStatus: {
-    code: "ElcHe1RunSta",
+    code: 'ElcHe1RunSta',
   },
   electricHeater2RunStatus: {
-    code: "ElcHe2RunSta",
+    code: 'ElcHe2RunSta',
   },
   antiFrostRunStatus: {
-    code: "AnFrzzRunSta",
+    code: 'AnFrzzRunSta',
   },
   power: {
-    code: "Pow",
+    code: 'Pow',
     value: {
       off: 0,
       on: 1,
     },
   },
   mode: {
-    code: "Mod",
+    code: 'Mod',
     value: {
-      auto: 0,
-      cool: 1,
-      dry: 2,
-      fan: 3,
-      heat: 4,
+      cool: 0,
+      heat: 1,
+      hotWater: 2,
+      coolHotWater: 3,
+      heatHotWater: 4,
     },
   },
   coolingWaterOutTempSet: {
-    code: "CoWatOutTemSet",
+    code: 'CoWatOutTemSet',
   },
   heatingWaterOutTempSet: {
-    code: "HeWatOutTemSet",
+    code: 'HeWatOutTemSet',
   },
   waterBoxTempSet: {
-    code: "WatBoxTemSet",
+    code: 'WatBoxTemSet',
   },
   temperatureUnit: {
-    code: "TemUn",
+    code: 'TemUn',
     value: {
       celsius: 0,
       fahrenheit: 1,
     },
   },
   temperatureRecovery: {
-    code: "TemRec",
+    code: 'TemRec',
     value: {
       off: 0,
       on: 1,
     },
   },
   allError: {
-    code: "AllErr",
+    code: 'AllErr',
     value: {
       off: 0,
       on: 1,
     },
   },
   host: {
-    code: "host",
+    code: 'host',
   },
   name: {
-    code: "name",
+    code: 'name',
   },
   coldHotWater: {
-    code: "ColHtWter",
+    code: 'ColHtWter',
   },
   hotHotWater: {
-    code: "HetHtWter",
+    code: 'HetHtWter',
   },
   leftHome: {
-    code: "LefHom",
+    code: 'LefHom',
   },
   temperatureRecoveryB: {
-    code: "TemRecB",
+    code: 'TemRecB',
   },
   roomHomeTempExt: {
-    code: "RomHomTemExt",
+    code: 'RomHomTemExt',
   },
   coolingHomeTempSet: {
-    code: "CoHomTemSet",
+    code: 'CoHomTemSet',
   },
   heatingHomeTempSet: {
-    code: "HeHomTemSet",
+    code: 'HeHomTemSet',
   },
 };
 

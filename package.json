@@ -2,7 +2,7 @@
   "displayName": "Daitsu ATW Homebridge Plugin",
   "name": "homebridge-daitsu-atw",
   "version": "0.0.3",
-  "description": "A short description about what your plugin does.",
+  "description": "Plugin for Homebridge to control Daitsu ATW devices.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",

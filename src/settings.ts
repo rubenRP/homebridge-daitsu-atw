@@ -5,6 +5,7 @@ export const PLUGIN_NAME = 'homebridge-daitsu-atw';
 export type SwitchName = 'power' | 'mode';
 
 //TODO - define config schema
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const DEFAULT_DEVICE_CONFIG: any = {
   switches: 'power',
 };

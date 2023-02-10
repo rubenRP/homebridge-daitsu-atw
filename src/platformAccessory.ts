@@ -25,6 +25,7 @@ export class DaitsuATW {
   constructor(
     public readonly platform: DaitsuPlatform,
     public readonly accessory: PlatformAccessory,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     private readonly deviceConfig: any,
   ) {
     this.socket = platform.socket;
@@ -347,6 +348,7 @@ export class DaitsuATW {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function fieldsToObject(cols: any, values: any): any {
   const obj = {};
   cols.forEach((key, i) => {

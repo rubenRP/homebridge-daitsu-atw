@@ -18,7 +18,6 @@ import {
 } from './settings';
 import { DaitsuATW } from './platformAccessory';
 import crypto from './crypto';
-import { platform } from 'os';
 
 /**
  * HomebridgePlatform

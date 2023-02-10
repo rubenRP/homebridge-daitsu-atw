@@ -2,13 +2,9 @@ export const PLATFORM_NAME = 'DaitsuATW';
 export const ACCESSORY_NAME = 'ATW';
 export const PLUGIN_NAME = 'homebridge-daitsu-atw';
 
-export type SwitchName = 'power' | 'mode';
-
 //TODO - define config schema
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const DEFAULT_DEVICE_CONFIG: any = {
-  switches: 'power',
-};
+export const DEFAULT_DEVICE_CONFIG: any = {};
 
 export const DEFAULT_PLATFORM_CONFIG = {
   name: 'Daitsu ATW',
@@ -17,7 +13,7 @@ export const DEFAULT_PLATFORM_CONFIG = {
   scanCount: 10,
   scanTimeout: 3000,
   defaultValue: DEFAULT_DEVICE_CONFIG,
-  statusUpdateInterval: 30,
+  statusUpdateInterval: 60,
 };
 
 export const UDP_SCAN_PORT = 7000;

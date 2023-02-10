@@ -2,15 +2,10 @@ import { Socket } from 'dgram';
 import { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 import commands from './commands';
 import crypto from './crypto';
-
 import { DaitsuPlatform } from './platform';
 import { DEFAULT_PLATFORM_CONFIG } from './settings';
+import helpers from './helpers';
 
-/**
- * Platform Accessory
- * An instance of this class is created for each accessory your platform registers
- * Each accessory may expose multiple services of different service types.
- */
 export class DaitsuATW {
   private service: Service;
 
@@ -33,10 +28,13 @@ export class DaitsuATW {
     this.isPending = false;
     this.key = undefined;
     this.status = {};
+
     // register event handler
     this.socket.on('message', this.handleMessage);
+
     // try to bind device;
     this.sendBindRequest();
+
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
@@ -135,7 +133,6 @@ export class DaitsuATW {
         message.pack,
         message.i === 1 ? undefined : this.key,
       );
-      this.platform.log.debug('[DaitsuATW] handle message: %j', pack.t);
       switch (pack.t) {
         case 'bindok':
           this.key = pack.key;
@@ -146,10 +143,12 @@ export class DaitsuATW {
           this.afterBinded();
           break;
         case 'dat': // update status
-          this.updateStatus(fieldsToObject(pack.cols, pack.dat));
+          this.updateStatus(helpers.fieldsToObject(pack.cols, pack.dat));
           break;
         case 'res': // command response
-          this.updateStatus(fieldsToObject(pack.opt, pack.p || pack.val));
+          this.updateStatus(
+            helpers.fieldsToObject(pack.opt, pack.p || pack.val),
+          );
           break;
         case 'dev':
           break;
@@ -195,10 +194,6 @@ export class DaitsuATW {
       ],
     };
     this.sendMessage(message);
-  }
-
-  formatTemperature(high, low) {
-    return high - 100 + low / 100;
   }
 
   get power() {
@@ -251,7 +246,7 @@ export class DaitsuATW {
     ) {
       return -1;
     }
-    return this.formatTemperature(
+    return helpers.formatTemperature(
       this.status[commands.hepOutWaterTempHigh.code],
       this.status[commands.hepOutWaterTempLow.code],
     );
@@ -268,7 +263,7 @@ export class DaitsuATW {
     ) {
       return -1;
     }
-    return this.formatTemperature(
+    return helpers.formatTemperature(
       this.status[commands.waterBoxTempHigh.code],
       this.status[commands.waterBoxTempLow.code],
     );
@@ -346,13 +341,4 @@ export class DaitsuATW {
   getDeviceLabel() {
     return `${this.getMac()} -- ${this.getAddress()}:${this.getPort()}`;
   }
-}
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fieldsToObject(cols: any, values: any): any {
-  const obj = {};
-  cols.forEach((key, i) => {
-    obj[key] = values[i];
-  });
-  return obj;
 }

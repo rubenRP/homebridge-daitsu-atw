@@ -13,19 +13,19 @@ Plugin for Homebridge to control Daitsu ATW devices. This plugin is based on [ho
 - Heater/Cooler info in a thermostat accessory
 - Water box heater info in a thermostat accessory
 
-## Future features
-
-[] Flags for all status views (compressor, fan, etc.)
-[] Set methods to control the device
-[] Power & mode switches
-[] Temperature control
-[] Water box heater control
-
 ## Requirements
 
 - Node.js v16.0.0 or higher
 - Homebridge v1.6.0 or higher
-- Daitsu ATW device
+- Daitsu ATW device (tested on f1 modelType and version 5.0.0)
+
+## Future features
+
+- Flags for all status views (compressor, fan, etc.)
+- Set methods to control the device
+- Power & mode switches
+- Temperature control
+- Water box heater control
 
 ## Installation
 
@@ -52,4 +52,5 @@ npm install homebridge-daitsu-atw -g
 ## Credits
 
 [homebridge-gree-air-conditioner](https://github.com/kongkx/homebridge-gree-air-conditioner) by [kongkx](https://github.com/kongkx)
+
 [gree-remote](https://github.com/tomikaa87/gree-remote/issues/43) by [tomikaa87](https://github.com/tomikaa87)

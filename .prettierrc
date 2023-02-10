@@ -1,32 +1,5 @@
 {
   "printWidth": 80,
   "singleQuote": true,
-  "trailingComma": "all",
-  "asd": {
-    "admin": [
-      {
-        "name": "Default Room",
-        "services": [
-          {
-            "uniqueId": "479ea96cd0e33209ad16beb129c3d32f16a4d048af7b216ac9b0f8067ff3fbb5",
-            "aid": 19,
-            "iid": 17,
-            "uuid": "0000004A-0000-1000-8000-0026BB765291"
-          },
-          {
-            "uniqueId": "4624f6c7c60b9250599da0fbb8a72bdf9c1d045ce5155b2fbe1df140abd647ea",
-            "aid": 19,
-            "iid": 8,
-            "uuid": "00000049-0000-1000-8000-0026BB765291"
-          },
-          {
-            "uniqueId": "2332eac161b2039d6a485617e7d56adcb1d27965898ab723175fbecb98e6c5be",
-            "aid": 19,
-            "iid": 11,
-            "uuid": "000000BC-0000-1000-8000-0026BB765291"
-          }
-        ]
-      }
-    ]
-  }
+  "trailingComma": "all"
 }

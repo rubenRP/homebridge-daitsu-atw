@@ -174,27 +174,23 @@ export class DaitsuATW {
       mac: this.getMac(),
       t: 'status',
       cols: [
-        'Pow',
-        'Mod',
-        'TemUn',
-        'CoWatOutTemSet',
-        'HeWatOutTemSet',
-        'HepOutWatTemHi',
-        'HepOutWatTemLo',
-        'WatBoxTemHi',
-        'WatBoxTemLo',
-        'WatBoxTemSet',
-        'TemRec',
-        'AllErr',
-        'ColHtWter',
-        'HetHtWter',
-        'LefHom',
-        'TemRecB',
-        '2wayValRunSta',
-        'FanRunSta',
-        'HPumpRunSta',
-        'ComRunSta',
-        'CompRunSta',
+        commands.power.code,
+        commands.mode.code,
+        commands.temperatureUnit.code,
+        commands.coolingWaterOutTempSet.code,
+        commands.heatingWaterOutTempSet.code,
+        commands.hepOutWaterTempHigh.code,
+        commands.hepOutWaterTempLow.code,
+        commands.waterBoxTempHigh.code,
+        commands.waterBoxTempLow.code,
+        commands.waterBoxTempSet.code,
+        commands.temperatureRecovery.code,
+        commands.allError.code,
+        commands.waterBoxElectricHeaterRunStatus.code,
+        commands.systemAntiFrostRunStatus.code,
+        commands.electricHeater1RunStatus.code,
+        commands.electricHeater2RunStatus.code,
+        commands.hpAntiFreeze.code,
       ],
     };
     this.sendMessage(message);
@@ -294,6 +290,9 @@ export class DaitsuATW {
           this.platform.Characteristic.TargetHeatingCoolingState,
         )
         .updateValue(this.heaterCoolerTargetState);
+      this.service
+        .getCharacteristic(this.platform.Characteristic.TargetTemperature)
+        .updateValue(this.heaterCoolerTargetTemperature as number);
       this.service
         .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
         .updateValue(this.heaterCoolerCurrentTemperature);

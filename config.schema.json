@@ -31,7 +31,7 @@
       "mac": {
         "title": "Mac Address (Serial Number)",
         "type": "string",
-        "default": "502cc676ce2a"
+        "required": true
       }
     }
   }

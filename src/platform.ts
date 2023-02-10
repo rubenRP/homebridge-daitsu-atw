@@ -18,6 +18,7 @@ import {
 } from './settings';
 import { DaitsuATW } from './platformAccessory';
 import crypto from './crypto';
+import { platform } from 'os';
 
 /**
  * HomebridgePlatform
@@ -33,8 +34,8 @@ export class DaitsuPlatform implements DynamicPlatformPlugin {
   public readonly accessories: PlatformAccessory[] = [];
 
   socket: dgram.Socket;
-  devices: Record<string, PlatformAccessory>;
-  initializedDevices: Record<string, boolean>;
+  device: PlatformAccessory;
+  initializedDevice: boolean;
   scanCount: number;
   timer: NodeJS.Timeout | undefined;
   // messages: any;
@@ -45,8 +46,8 @@ export class DaitsuPlatform implements DynamicPlatformPlugin {
     public readonly api: API,
   ) {
     this.socket = dgram.createSocket('udp4');
-    this.devices = {};
-    this.initializedDevices = {};
+    this.device = {} as PlatformAccessory;
+    this.initializedDevice = false;
     this.config = {
       ...DEFAULT_PLATFORM_CONFIG,
       ...config,
@@ -97,7 +98,7 @@ export class DaitsuPlatform implements DynamicPlatformPlugin {
 
     // add the restored accessory to the accessories cache so we can track if it has already been registered
     if (accessory.context.device?.mac) {
-      this.devices[accessory.context.device.mac] = accessory;
+      this.device = accessory;
     }
   }
 
@@ -139,36 +140,30 @@ export class DaitsuPlatform implements DynamicPlatformPlugin {
 
   registerDevice = (deviceInfo) => {
     const deviceConfig = this.config;
-    let accessory = this.devices[deviceInfo.mac];
+    let accessory = this.device;
 
-    if (accessory && this.initializedDevices[accessory.UUID]) {
+    if (Object.keys(accessory).length !== 0 && this.initializedDevice) {
       return;
     }
 
-    if (!accessory) {
+    if (Object.keys(accessory).length === 0) {
       const deviceName = deviceInfo.name;
       this.log.debug(
         `Initializing new accessory ${deviceInfo.mac} with name ${deviceName}...`,
       );
-      this.log.debug('Before hap.uuid.generate');
       const uuid = this.api.hap.uuid.generate(deviceInfo.mac);
-      this.log.debug('After hap.uuid.generate');
-      this.log.debug('Before new this.api.platformAccessory');
       accessory = new this.api.platformAccessory(deviceInfo.mac, uuid);
-      this.log.debug('After new this.api.platformAccessory');
 
-      this.devices[deviceInfo.mac] = accessory;
-      this.log.debug('Before this.api.registerPlatformAccessories');
+      this.device = accessory;
       this.api.registerPlatformAccessories(PLUGIN_NAME, PLATFORM_NAME, [
         accessory,
       ]);
-      this.log.debug('After this.api.registerPlatformAccessories');
     }
 
     if (accessory) {
       // mark devices as initialized.
       accessory.context.device = deviceInfo;
-      this.initializedDevices[accessory.UUID] = true;
+      this.initializedDevice = true;
       this.scanCount = this.config.scanCount;
       return new DaitsuATW(this, accessory, deviceConfig);
     }

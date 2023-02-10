@@ -1,49 +1,4 @@
 const commands = {
-  allInWaterTempHigh: {
-    code: 'AllInWatTemHig',
-  },
-  allInWaterTempLow: {
-    code: 'AllInWatTemLow',
-  },
-  allOutWaterTempHigh: {
-    code: 'AllOutWatTemHig',
-  },
-  allOutWaterTempLow: {
-    code: 'AllOutWatTemLow',
-  },
-  hepOutWaterTempHigh: {
-    code: 'HepOutWatTemHi',
-  },
-  hepOutWaterTempLow: {
-    code: 'HepOutWatTemLo',
-  },
-  waterBoxTempHigh: {
-    code: 'WatBoxTemHi',
-  },
-  waterBoxTempLow: {
-    code: 'WatBoxTemLo',
-  },
-  roomTempHigh: {
-    code: 'RmoHomTemHi',
-  },
-  roomTempLow: {
-    code: 'RmoHomTemLo',
-  },
-  waterBoxElectricHeaterRunStatus: {
-    code: 'WatBoxElcHeRunSta',
-  },
-  systemAntiFrostRunStatus: {
-    code: 'SyAnFroRunSta',
-  },
-  electricHeater1RunStatus: {
-    code: 'ElcHe1RunSta',
-  },
-  electricHeater2RunStatus: {
-    code: 'ElcHe2RunSta',
-  },
-  antiFrostRunStatus: {
-    code: 'AnFrzzRunSta',
-  },
   power: {
     code: 'Pow',
     value: {
@@ -61,21 +16,30 @@ const commands = {
       heatHotWater: 4,
     },
   },
-  coolingWaterOutTempSet: {
-    code: 'CoWatOutTemSet',
-  },
-  heatingWaterOutTempSet: {
-    code: 'HeWatOutTemSet',
-  },
-  waterBoxTempSet: {
-    code: 'WatBoxTemSet',
-  },
   temperatureUnit: {
     code: 'TemUn',
     value: {
       celsius: 0,
       fahrenheit: 1,
     },
+  },
+  coolingWaterOutTempSet: {
+    code: 'CoWatOutTemSet',
+  },
+  heatingWaterOutTempSet: {
+    code: 'HeWatOutTemSet',
+  },
+  hepOutWaterTempHigh: {
+    code: 'HepOutWatTemHi',
+  },
+  hepOutWaterTempLow: {
+    code: 'HepOutWatTemLo',
+  },
+  waterBoxTempHigh: {
+    code: 'WatBoxTemHi',
+  },
+  waterBoxTempLow: {
+    code: 'WatBoxTemLo',
   },
   temperatureRecovery: {
     code: 'TemRec',
@@ -91,12 +55,6 @@ const commands = {
       on: 1,
     },
   },
-  host: {
-    code: 'host',
-  },
-  name: {
-    code: 'name',
-  },
   coldHotWater: {
     code: 'ColHtWter',
   },
@@ -106,17 +64,35 @@ const commands = {
   leftHome: {
     code: 'LefHom',
   },
-  temperatureRecoveryB: {
-    code: 'TemRecB',
+  waterBoxElectricHeaterRunStatus: {
+    code: 'WatBoxElcHeRunSta',
   },
-  roomHomeTempExt: {
-    code: 'RomHomTemExt',
+  systemAntiFrostRunStatus: {
+    code: 'SyAnFroRunSta',
   },
-  coolingHomeTempSet: {
-    code: 'CoHomTemSet',
+  electricHeater1RunStatus: {
+    code: 'ElcHe1RunSta',
   },
-  heatingHomeTempSet: {
-    code: 'HeHomTemSet',
+  electricHeater2RunStatus: {
+    code: 'ElcHe2RunSta',
+  },
+  hpAntiFreeze: {
+    code: 'AnFrzzRunSta',
+  },
+  roomTempHigh: {
+    code: 'RmoHomTemHi',
+  },
+  roomTempLow: {
+    code: 'RmoHomTemLo',
+  },
+  waterBoxTempSet: {
+    code: 'WatBoxTemSet',
+  },
+  host: {
+    code: 'host',
+  },
+  name: {
+    code: 'name',
   },
 };
 

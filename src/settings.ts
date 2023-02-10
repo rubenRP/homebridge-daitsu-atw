@@ -15,7 +15,6 @@ export const DEFAULT_PLATFORM_CONFIG = {
   scanAddress: '192.168.1.255',
   scanCount: 10,
   scanTimeout: 3000,
-  mac: '502cc676ce2a',
   defaultValue: DEFAULT_DEVICE_CONFIG,
   statusUpdateInterval: 30,
 };

@@ -1,5 +1,4 @@
 {
-  "private": true,
   "displayName": "Daitsu ATW Homebridge Plugin",
   "name": "homebridge-daitsu-atw",
   "version": "0.0.1",

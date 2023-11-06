@@ -32,6 +32,21 @@
         "title": "Mac Address (Serial Number)",
         "type": "string",
         "required": true
+      },
+      "supabaseUrl": {
+        "title": "Supabase URL",
+        "type": "string",
+        "required": false
+      },
+      "supabaseKey": {
+        "title": "Supabase Key",
+        "type": "string",
+        "required": false
+      },
+      "enableDatabase": {
+        "title": "Enable Database",
+        "type": "boolean",
+        "default": false
       }
     }
   }

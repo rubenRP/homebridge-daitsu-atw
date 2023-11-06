@@ -5,6 +5,7 @@ import crypto from './crypto';
 import { DaitsuPlatform } from './platform';
 import { DEFAULT_PLATFORM_CONFIG } from './settings';
 import helpers from './helpers';
+import { createClient } from '@supabase/supabase-js';
 
 export class DaitsuATW {
   private service: Service;
@@ -16,6 +17,7 @@ export class DaitsuATW {
   private updateTimer: NodeJS.Timeout | undefined;
   private cols: Array<string> | undefined;
   private status: Record<string, unknown>;
+  private supabase: any;
 
   constructor(
     public readonly platform: DaitsuPlatform,
@@ -28,6 +30,17 @@ export class DaitsuATW {
     this.isPending = false;
     this.key = undefined;
     this.status = {};
+
+    if (
+      this.platform.config.supabaseUrl &&
+      this.platform.config.supabaseKey &&
+      this.platform.config.enableDatabase
+    ) {
+      this.supabase = createClient(
+        this.platform.config.supabaseUrl,
+        this.platform.config.supabaseKey,
+      );
+    }
 
     // register event handler
     this.socket.on('message', this.handleMessage);
@@ -269,8 +282,8 @@ export class DaitsuATW {
     );
   }
 
-  updateStatus(patch) {
-    this.platform.log.info(
+  async updateStatus(patch) {
+    this.platform.log.debug(
       `[${this.getDeviceLabel()}] Update Status: %j`,
       patch,
     );
@@ -279,6 +292,10 @@ export class DaitsuATW {
       ...patch,
     };
     this.isPending = false;
+
+    if (this.supabase && this.getConfig('enableDatabase')) {
+      await this.updateSupabase(patch);
+    }
 
     if (patch[commands.power.code] !== undefined) {
       this.service
@@ -292,6 +309,17 @@ export class DaitsuATW {
       this.service
         .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
         .updateValue(this.heaterCoolerCurrentTemperature);
+    }
+  }
+
+  async updateSupabase(patch) {
+    const { error } = await this.supabase
+      .from('readings')
+      .insert([{ data: patch }])
+      .select();
+
+    if (error) {
+      this.platform.log.error(error);
     }
   }
 

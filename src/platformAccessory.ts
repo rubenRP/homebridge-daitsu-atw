@@ -17,6 +17,7 @@ export class DaitsuATW {
   private updateTimer: NodeJS.Timeout | undefined;
   private cols: Array<string> | undefined;
   private status: Record<string, unknown>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private supabase: any;
 
   constructor(

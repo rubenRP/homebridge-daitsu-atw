@@ -1,52 +1,16 @@
 {
-  "pluginAlias": "DaitsuATW",
+  "pluginAlias": "ExampleHomebridgePlugin",
   "pluginType": "platform",
   "singular": true,
+  "strictValidation": false,
   "schema": {
     "type": "object",
     "properties": {
       "name": {
         "title": "Name",
         "type": "string",
-        "default": "DaitsuATW"
-      },
-      "port": {
-        "title": "Port",
-        "type": "integer",
-        "default": 7002,
-        "description": "UDP socket server port to bind"
-      },
-      "scanAddress": {
-        "title": "Scan Address, not target device address",
-        "type": "string",
-        "format": "ipv4",
-        "default": "192.168.1.255"
-      },
-      "scanCount": {
-        "title": "Scan count",
-        "type": "integer",
-        "placeholder": 10,
-        "minimum": 3
-      },
-      "mac": {
-        "title": "Mac Address (Serial Number)",
-        "type": "string",
-        "required": true
-      },
-      "supabaseUrl": {
-        "title": "Supabase URL",
-        "type": "string",
-        "required": false
-      },
-      "supabaseKey": {
-        "title": "Supabase Key",
-        "type": "string",
-        "required": false
-      },
-      "enableDatabase": {
-        "title": "Enable Database",
-        "type": "boolean",
-        "default": false
+        "required": true,
+        "default": "Example Dynamic Platform"
       }
     }
   }

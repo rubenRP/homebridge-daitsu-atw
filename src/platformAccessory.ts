@@ -2,10 +2,9 @@ import { Socket } from 'dgram';
 import { CharacteristicValue, PlatformAccessory, Service } from 'homebridge';
 import commands from './commands';
 import crypto from './crypto';
+import helpers from './helpers';
 import { DaitsuPlatform } from './platform';
 import { DEFAULT_PLATFORM_CONFIG } from './settings';
-import helpers from './helpers';
-import { createClient } from '@supabase/supabase-js';
 
 export class DaitsuATW {
   private service: Service;
@@ -17,8 +16,6 @@ export class DaitsuATW {
   private updateTimer: NodeJS.Timeout | undefined;
   private cols: Array<string> | undefined;
   private status: Record<string, unknown>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private supabase: any;
 
   constructor(
     public readonly platform: DaitsuPlatform,
@@ -31,17 +28,6 @@ export class DaitsuATW {
     this.isPending = false;
     this.key = undefined;
     this.status = {};
-
-    if (
-      this.platform.config.supabaseUrl &&
-      this.platform.config.supabaseKey &&
-      this.platform.config.enableDatabase
-    ) {
-      this.supabase = createClient(
-        this.platform.config.supabaseUrl,
-        this.platform.config.supabaseKey,
-      );
-    }
 
     // register event handler
     this.socket.on('message', this.handleMessage);
@@ -79,10 +65,16 @@ export class DaitsuATW {
     this.service
       .getCharacteristic(this.platform.Characteristic.TargetTemperature)
       .updateValue(20)
+      .setProps({
+        minValue: 5,
+        maxValue: 35,
+        minStep: 1,
+      })
       .on(
         'get',
         this.getCharacteristic.bind(this, 'heaterCoolerTargetTemperature'),
-      );
+      )
+      .on('set', this.setTargetTemperature.bind(this));
 
     this.service
       .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
@@ -95,11 +87,17 @@ export class DaitsuATW {
     this.service
       .getCharacteristic(this.platform.Characteristic.TargetHeatingCoolingState)
       .updateValue(0)
-      .on('get', this.getCharacteristic.bind(this, 'heaterCoolerTargetState'));
+      .on('get', this.getCharacteristic.bind(this, 'heaterCoolerTargetState'))
+      .on('set', this.setTargetHeatingCoolingState.bind(this));
   }
 
-  getCharacteristic(key, callback) {
-    const value = this[key];
+  getCharacteristic(
+    key: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    callback: (error?: Error | null, value?: any) => void,
+  ) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const value = this[key as keyof this] as any;
     this.platform.log.debug(
       `[${this.getDeviceLabel()}] Get characteristic: ${key}, value: ${value}`,
     );
@@ -110,15 +108,20 @@ export class DaitsuATW {
     }
   }
 
-  setCharacteristic(key, value: CharacteristicValue, callback) {
+  setCharacteristic(
+    key: string,
+    value: CharacteristicValue,
+    callback: (error?: Error | null) => void,
+  ) {
     this.platform.log.debug(
       `[${this.getDeviceLabel()}] Set characteristic: ${key} to value: ${value}`,
     );
-    this[key] = value;
+    // Store the value in the status object
+    this.status[key] = value;
     callback(null);
   }
 
-  sendMessage(message) {
+  sendMessage(message: Record<string, unknown>) {
     const pack = crypto.encrypt(message, this.key);
     const payload = {
       cid: 'app',
@@ -139,10 +142,13 @@ export class DaitsuATW {
     }
   }
 
-  handleMessage = (msg, rinfo) => {
+  handleMessage = (msg: Buffer, rinfo: { address: string }) => {
     if (this.getAddress() === rinfo.address) {
       const message = JSON.parse(msg.toString());
-      // this.platform.log.debug(`[${this.getDeviceLabel()}] handle message: %j`, message);
+      this.platform.log.debug(
+        `[${this.getDeviceLabel()}] handle message: %j`,
+        message,
+      );
       const pack = crypto.decrypt(
         message.pack,
         message.i === 1 ? undefined : this.key,
@@ -205,6 +211,9 @@ export class DaitsuATW {
         commands.electricHeater1RunStatus.code,
         commands.electricHeater2RunStatus.code,
         commands.hpAntiFreeze.code,
+        'OutEnvTem',
+        'TemsSenOut',
+        'TemSen',
       ],
     };
     this.sendMessage(message);
@@ -237,16 +246,26 @@ export class DaitsuATW {
   }
 
   get heaterCoolerTargetTemperature() {
+    let temperature: number;
     switch (this.status[commands.mode.code]) {
       case commands.mode.value.cool:
       case commands.mode.value.coolHotWater:
-        return this.status[commands.coolingWaterOutTempSet.code];
+        temperature = this.status[
+          commands.coolingWaterOutTempSet.code
+        ] as number;
+        break;
       case commands.mode.value.heat:
       case commands.mode.value.heatHotWater:
-        return this.status[commands.heatingWaterOutTempSet.code];
+        temperature = this.status[
+          commands.heatingWaterOutTempSet.code
+        ] as number;
+        break;
       default:
-        return 0;
+        return 20;
     }
+
+    // Always return rounded temperature
+    return temperature ? Math.round(temperature) : 20;
   }
 
   get heaterCoolerCurrentState() {
@@ -258,16 +277,20 @@ export class DaitsuATW {
       !this.status[commands.hepOutWaterTempHigh.code] ||
       !this.status[commands.hepOutWaterTempLow.code]
     ) {
-      return -1;
+      return 20;
     }
-    return helpers.formatTemperature(
-      this.status[commands.hepOutWaterTempHigh.code],
-      this.status[commands.hepOutWaterTempLow.code],
+    const temperature = helpers.formatTemperature(
+      this.status[commands.hepOutWaterTempHigh.code] as number,
+      this.status[commands.hepOutWaterTempLow.code] as number,
     );
+
+    // Always return rounded temperature
+    return Math.round(temperature);
   }
 
   get waterHeaterTargetTemperature() {
-    return this.status[commands.waterBoxTempSet.code];
+    const temperature = this.status[commands.waterBoxTempSet.code] as number;
+    return temperature ? Math.round(temperature) : 45;
   }
 
   get waterHeaterCurrentTemperature() {
@@ -275,16 +298,19 @@ export class DaitsuATW {
       !this.status[commands.waterBoxTempHigh.code] ||
       !this.status[commands.waterBoxTempLow.code]
     ) {
-      return -1;
+      return 45;
     }
-    return helpers.formatTemperature(
-      this.status[commands.waterBoxTempHigh.code],
-      this.status[commands.waterBoxTempLow.code],
+    const temperature = helpers.formatTemperature(
+      this.status[commands.waterBoxTempHigh.code] as number,
+      this.status[commands.waterBoxTempLow.code] as number,
     );
+
+    // Always return rounded temperature
+    return Math.round(temperature);
   }
 
-  async updateStatus(patch) {
-    this.platform.log.debug(
+  async updateStatus(patch: Record<string, unknown>) {
+    this.platform.log.info(
       `[${this.getDeviceLabel()}] Update Status: %j`,
       patch,
     );
@@ -293,10 +319,6 @@ export class DaitsuATW {
       ...patch,
     };
     this.isPending = false;
-
-    if (this.supabase && this.getConfig('enableDatabase')) {
-      await this.updateSupabase(patch);
-    }
 
     if (patch[commands.power.code] !== undefined) {
       this.service
@@ -310,17 +332,6 @@ export class DaitsuATW {
       this.service
         .getCharacteristic(this.platform.Characteristic.CurrentTemperature)
         .updateValue(this.heaterCoolerCurrentTemperature);
-    }
-  }
-
-  async updateSupabase(patch) {
-    const { error } = await this.supabase
-      .from('readings')
-      .insert([{ data: patch }])
-      .select();
-
-    if (error) {
-      this.platform.log.error(error);
     }
   }
 
@@ -354,20 +365,120 @@ export class DaitsuATW {
     // TODO: may config features based on some static database;
     if (!this.cols) {
       this.platform.log.info(`Cols Received: ${this.cols}`);
-      this.cols = Object.keys(commands).map((k) => commands[k].code);
+      this.cols = Object.keys(commands).map(
+        (k) => commands[k as keyof typeof commands].code,
+      );
     }
     return this.cols;
   }
 
-  getConfig(key) {
+  getConfig(key: string) {
     return (
       this.deviceConfig?.[key] ??
       this.platform.config.defaultValue?.[key] ??
-      DEFAULT_PLATFORM_CONFIG[key]
+      DEFAULT_PLATFORM_CONFIG[key as keyof typeof DEFAULT_PLATFORM_CONFIG]
     );
   }
 
   getDeviceLabel() {
     return `${this.getMac()} -- ${this.getAddress()}:${this.getPort()}`;
+  }
+
+  setTargetTemperature(
+    value: CharacteristicValue,
+    callback: (error?: Error | null) => void,
+  ) {
+    this.platform.log.debug(
+      `[${this.getDeviceLabel()}] Set target temperature to: ${value}`,
+    );
+
+    const inputTemperature = value as number;
+    const roundedTemperature = Math.round(inputTemperature);
+    let command: string;
+
+    this.platform.log.debug(
+      `[${this.getDeviceLabel()}] Rounded temperature from ${inputTemperature} to ${roundedTemperature}`,
+    );
+
+    // Determine which temperature setting to use based on current mode
+    switch (this.status[commands.mode.code]) {
+      case commands.mode.value.cool:
+      case commands.mode.value.coolHotWater:
+        command = commands.coolingWaterOutTempSet.code;
+        break;
+      case commands.mode.value.heat:
+      case commands.mode.value.heatHotWater:
+        command = commands.heatingWaterOutTempSet.code;
+        break;
+      default:
+        callback(new Error('Cannot set temperature when device is off'));
+        return;
+    }
+
+    // Update the status immediately to reflect the rounded value
+    this.status[command] = roundedTemperature;
+
+    // Update the HomeKit characteristic to show the rounded value
+    this.service
+      .getCharacteristic(this.platform.Characteristic.TargetTemperature)
+      .updateValue(roundedTemperature);
+
+    this.sendCommand({ [command]: roundedTemperature });
+    callback(null);
+  }
+
+  setTargetHeatingCoolingState(
+    value: CharacteristicValue,
+    callback: (error?: Error | null) => void,
+  ) {
+    this.platform.log.debug(
+      `[${this.getDeviceLabel()}] Set target heating/cooling state to: ${value}`,
+    );
+
+    const state = value as number;
+    const commands_to_send: Record<string, number> = {};
+
+    switch (state) {
+      case this.platform.Characteristic.TargetHeatingCoolingState.OFF:
+        commands_to_send[commands.power.code] = commands.power.value.off;
+        break;
+      case this.platform.Characteristic.TargetHeatingCoolingState.HEAT:
+        commands_to_send[commands.power.code] = commands.power.value.on;
+        commands_to_send[commands.mode.code] = commands.mode.value.heat;
+        break;
+      case this.platform.Characteristic.TargetHeatingCoolingState.COOL:
+        commands_to_send[commands.power.code] = commands.power.value.on;
+        commands_to_send[commands.mode.code] = commands.mode.value.cool;
+        break;
+      default:
+        callback(new Error(`Unsupported heating/cooling state: ${state}`));
+        return;
+    }
+
+    this.sendCommand(commands_to_send);
+    callback(null);
+  }
+
+  sendCommand(commands_to_send: Record<string, number>) {
+    if (!this.binded) {
+      this.platform.log.warn(
+        `[${this.getDeviceLabel()}] Device not binded, cannot send command`,
+      );
+      return;
+    }
+
+    this.platform.log.debug(
+      `[${this.getDeviceLabel()}] Sending command: %j`,
+      commands_to_send,
+    );
+
+    const message = {
+      mac: this.getMac(),
+      t: 'cmd',
+      opt: Object.keys(commands_to_send),
+      p: Object.values(commands_to_send),
+    };
+
+    this.sendMessage(message);
   }
 }

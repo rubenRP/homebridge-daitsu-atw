@@ -154,26 +154,26 @@ export class DaitsuATW {
         message.i === 1 ? undefined : this.key,
       );
       switch (pack.t) {
-        case 'bindok':
-          this.key = pack.key;
-          this.binded = true;
-          this.platform.log.info(
-            `[${this.getDeviceLabel()}] Device binded. ${this.key}`,
-          );
-          this.afterBinded();
-          break;
-        case 'dat': // update status
-          this.updateStatus(helpers.fieldsToObject(pack.cols, pack.dat));
-          break;
-        case 'res': // command response
-          this.updateStatus(
-            helpers.fieldsToObject(pack.opt, pack.p || pack.val),
-          );
-          break;
-        case 'dev':
-          break;
-        default:
-          this.platform.log.debug(pack);
+      case 'bindok':
+        this.key = pack.key;
+        this.binded = true;
+        this.platform.log.info(
+          `[${this.getDeviceLabel()}] Device binded. ${this.key}`,
+        );
+        this.afterBinded();
+        break;
+      case 'dat': // update status
+        this.updateStatus(helpers.fieldsToObject(pack.cols, pack.dat));
+        break;
+      case 'res': // command response
+        this.updateStatus(
+          helpers.fieldsToObject(pack.opt, pack.p || pack.val),
+        );
+        break;
+      case 'dev':
+        break;
+      default:
+        this.platform.log.debug(pack);
       }
     }
   };
@@ -234,34 +234,34 @@ export class DaitsuATW {
     }
 
     switch (this.status[commands.mode.code]) {
-      case commands.mode.value.cool:
-      case commands.mode.value.coolHotWater:
-        return this.platform.Characteristic.TargetHeatingCoolingState.COOL;
-      case commands.mode.value.heat:
-      case commands.mode.value.heatHotWater:
-        return this.platform.Characteristic.TargetHeatingCoolingState.HEAT;
-      default:
-        return this.platform.Characteristic.TargetHeatingCoolingState.OFF;
+    case commands.mode.value.cool:
+    case commands.mode.value.coolHotWater:
+      return this.platform.Characteristic.TargetHeatingCoolingState.COOL;
+    case commands.mode.value.heat:
+    case commands.mode.value.heatHotWater:
+      return this.platform.Characteristic.TargetHeatingCoolingState.HEAT;
+    default:
+      return this.platform.Characteristic.TargetHeatingCoolingState.OFF;
     }
   }
 
   get heaterCoolerTargetTemperature() {
     let temperature: number;
     switch (this.status[commands.mode.code]) {
-      case commands.mode.value.cool:
-      case commands.mode.value.coolHotWater:
-        temperature = this.status[
-          commands.coolingWaterOutTempSet.code
-        ] as number;
-        break;
-      case commands.mode.value.heat:
-      case commands.mode.value.heatHotWater:
-        temperature = this.status[
-          commands.heatingWaterOutTempSet.code
-        ] as number;
-        break;
-      default:
-        return 20;
+    case commands.mode.value.cool:
+    case commands.mode.value.coolHotWater:
+      temperature = this.status[
+        commands.coolingWaterOutTempSet.code
+      ] as number;
+      break;
+    case commands.mode.value.heat:
+    case commands.mode.value.heatHotWater:
+      temperature = this.status[
+        commands.heatingWaterOutTempSet.code
+      ] as number;
+      break;
+    default:
+      return 20;
     }
 
     // Always return rounded temperature
@@ -402,17 +402,17 @@ export class DaitsuATW {
 
     // Determine which temperature setting to use based on current mode
     switch (this.status[commands.mode.code]) {
-      case commands.mode.value.cool:
-      case commands.mode.value.coolHotWater:
-        command = commands.coolingWaterOutTempSet.code;
-        break;
-      case commands.mode.value.heat:
-      case commands.mode.value.heatHotWater:
-        command = commands.heatingWaterOutTempSet.code;
-        break;
-      default:
-        callback(new Error('Cannot set temperature when device is off'));
-        return;
+    case commands.mode.value.cool:
+    case commands.mode.value.coolHotWater:
+      command = commands.coolingWaterOutTempSet.code;
+      break;
+    case commands.mode.value.heat:
+    case commands.mode.value.heatHotWater:
+      command = commands.heatingWaterOutTempSet.code;
+      break;
+    default:
+      callback(new Error('Cannot set temperature when device is off'));
+      return;
     }
 
     // Update the status immediately to reflect the rounded value
@@ -439,20 +439,20 @@ export class DaitsuATW {
     const commands_to_send: Record<string, number> = {};
 
     switch (state) {
-      case this.platform.Characteristic.TargetHeatingCoolingState.OFF:
-        commands_to_send[commands.power.code] = commands.power.value.off;
-        break;
-      case this.platform.Characteristic.TargetHeatingCoolingState.HEAT:
-        commands_to_send[commands.power.code] = commands.power.value.on;
-        commands_to_send[commands.mode.code] = commands.mode.value.heat;
-        break;
-      case this.platform.Characteristic.TargetHeatingCoolingState.COOL:
-        commands_to_send[commands.power.code] = commands.power.value.on;
-        commands_to_send[commands.mode.code] = commands.mode.value.cool;
-        break;
-      default:
-        callback(new Error(`Unsupported heating/cooling state: ${state}`));
-        return;
+    case this.platform.Characteristic.TargetHeatingCoolingState.OFF:
+      commands_to_send[commands.power.code] = commands.power.value.off;
+      break;
+    case this.platform.Characteristic.TargetHeatingCoolingState.HEAT:
+      commands_to_send[commands.power.code] = commands.power.value.on;
+      commands_to_send[commands.mode.code] = commands.mode.value.heat;
+      break;
+    case this.platform.Characteristic.TargetHeatingCoolingState.COOL:
+      commands_to_send[commands.power.code] = commands.power.value.on;
+      commands_to_send[commands.mode.code] = commands.mode.value.cool;
+      break;
+    default:
+      callback(new Error(`Unsupported heating/cooling state: ${state}`));
+      return;
     }
 
     this.sendCommand(commands_to_send);

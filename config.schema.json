@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "DaitsuATW",
   "pluginType": "platform",
   "singular": true,
   "strictValidation": false,
@@ -7,10 +7,55 @@
     "type": "object",
     "properties": {
       "name": {
-        "title": "Name",
+        "title": "Platform Name",
         "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+        "default": "Daitsu ATW",
+        "description": "Name shown in Homebridge logs."
+      },
+      "port": {
+        "title": "UDP Listen Port",
+        "type": "integer",
+        "default": 7002,
+        "minimum": 1,
+        "maximum": 65535,
+        "description": "Local port for receiving device responses."
+      },
+      "scanAddress": {
+        "title": "Scan Broadcast Address",
+        "type": "string",
+        "default": "192.168.1.255",
+        "description": "Broadcast address used to discover devices on the LAN."
+      },
+      "scanCount": {
+        "title": "Scan Attempts",
+        "type": "integer",
+        "default": 10,
+        "minimum": 1,
+        "description": "Number of discovery broadcasts before giving up."
+      },
+      "scanTimeout": {
+        "title": "Scan Interval (ms)",
+        "type": "integer",
+        "default": 3000,
+        "minimum": 500,
+        "description": "Milliseconds between discovery broadcasts."
+      },
+      "statusUpdateInterval": {
+        "title": "Status Poll Interval (s)",
+        "type": "integer",
+        "default": 60,
+        "minimum": 10,
+        "description": "Seconds between status polls after the device is bound."
+      },
+      "mac": {
+        "title": "Device MAC (optional)",
+        "type": "string",
+        "description": "Optional MAC address to match a specific device (e.g. aa:bb:cc:dd:ee:ff)."
+      },
+      "defaultValue": {
+        "title": "Default Device Values",
+        "type": "object",
+        "description": "Optional per-device default overrides."
       }
     }
   }

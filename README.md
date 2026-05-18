@@ -15,8 +15,8 @@ Plugin for Homebridge to control Daitsu ATW devices. This plugin is based on [ho
 
 ## Requirements
 
-- Node.js v16.0.0 or higher
-- Homebridge v1.6.0 or higher
+- Node.js v22.12.0 or higher (v24 recommended with Homebridge 2.0)
+- Homebridge v1.8.0 or v2.0.0 or higher
 - Daitsu ATW device (tested on f1 modelType and version 5.0.0)
 
 ## Future features
@@ -29,24 +29,30 @@ Plugin for Homebridge to control Daitsu ATW devices. This plugin is based on [ho
 
 ## Installation
 
+From npm (recommended):
+
 ```
-npm install homebridge-daitsu-atw -g
+npm install -g homebridge-daitsu-atw@0.2.0
 ```
+
+Or install from the Homebridge UI plugin search after version 0.2.0 is published.
 
 ## Configuration
 
-```
+```json
 {
-    "platforms": [
-        {
-            "platform": "DaitsuATW",
-            "scanAddress": "192.168.1.255",
-            "scanCount": 10,
-            "mac": "xx:xx:xx:xx:xx:xx",
-        }
-    ]
+  "platforms": [
+    {
+      "platform": "DaitsuATW",
+      "name": "Daitsu ATW",
+      "scanAddress": "192.168.1.255",
+      "scanCount": 10,
+      "scanTimeout": 3000,
+      "statusUpdateInterval": 60,
+      "mac": "xx:xx:xx:xx:xx:xx"
+    }
+  ]
 }
-
 ```
 
 ## Credits

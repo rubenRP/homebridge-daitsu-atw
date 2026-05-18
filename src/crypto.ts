@@ -3,7 +3,7 @@ import crypto from 'crypto';
 const genericKey = 'a3K8Bx%2r8Y7#xDh';
 
 export default {
-  encrypt: (data: any, key = genericKey) => {
+  encrypt: (data: Record<string, unknown>, key = genericKey) => {
     const string = JSON.stringify(data);
     const cipher = crypto.createCipheriv('aes-128-ecb', key, null);
     return cipher.update(string, 'utf8', 'base64') + cipher.final('base64');

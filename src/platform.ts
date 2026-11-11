@@ -31,6 +31,7 @@ export class DaitsuPlatform {
   initializedDevice: boolean;
   daitsuDevice: DaitsuATW | undefined;
   scanCount: number;
+  macFilter: string | undefined;
   timer: NodeJS.Timeout | undefined;
   // messages: any;
 
@@ -58,6 +59,7 @@ export class DaitsuPlatform {
       },
     };
     this.scanCount = 0;
+    this.macFilter = this.parseMacFilter(this.config.mac);
 
     this.log.debug('Finished initializing platform:', this.config.name);
     this.log.info(
@@ -86,6 +88,24 @@ export class DaitsuPlatform {
         // socket already closed
       }
     });
+  }
+
+  /**
+   * Returns the normalized MAC to filter by, or undefined when no valid MAC is
+   * configured (e.g. the README placeholder "xx:xx:xx:xx:xx:xx").
+   */
+  private parseMacFilter(mac: unknown): string | undefined {
+    if (!mac) {
+      return undefined;
+    }
+    const normalized = this.normalizeMac(mac);
+    if (normalized.length !== 12) {
+      this.log.warn(
+        `[INIT] Ignoring invalid mac "${mac}" in config; any discovered device will be used.`,
+      );
+      return undefined;
+    }
+    return normalized;
   }
 
   private normalizeMac(mac: unknown): string {
@@ -202,8 +222,8 @@ export class DaitsuPlatform {
 
       if (message.t === 'pack' && pack.t === 'dev') {
         if (
-          this.config.mac &&
-          this.normalizeMac(pack.mac) !== this.normalizeMac(this.config.mac)
+          this.macFilter &&
+          this.normalizeMac(pack.mac) !== this.macFilter
         ) {
           this.log.debug(
             `[MESSAGE] Ignoring device ${pack.mac}: does not match configured mac ${this.config.mac}`,

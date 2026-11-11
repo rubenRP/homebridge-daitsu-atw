@@ -40,10 +40,10 @@ Notes:
 From npm (recommended):
 
 ```
-npm install -g homebridge-daitsu-atw@0.2.0
+npm install -g homebridge-daitsu-atw@0.3.0
 ```
 
-Or install from the Homebridge UI plugin search after version 0.2.0 is published.
+Or search for "Daitsu ATW" in the Homebridge UI plugins tab.
 
 ## Configuration
 

@@ -88,11 +88,9 @@ const commands = {
   waterBoxTempSet: {
     code: 'WatBoxTemSet',
   },
-  host: {
-    code: 'host',
-  },
-  name: {
-    code: 'name',
+  // Outdoor ambient temperature. Unit/encoding not verified on ATW devices.
+  outdoorTemp: {
+    code: 'OutEnvTem',
   },
 };
 

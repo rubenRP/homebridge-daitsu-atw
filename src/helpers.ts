@@ -1,4 +1,7 @@
 export default {
+  clamp: (value: number, min: number, max: number) => {
+    return Math.min(max, Math.max(min, value));
+  },
   formatTemperature: (high: number, low: number) => {
     return high - 100 + low / 100;
   },

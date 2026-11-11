@@ -29,6 +29,7 @@ export class DaitsuPlatform {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   device: any;
   initializedDevice: boolean;
+  daitsuDevice: DaitsuATW | undefined;
   scanCount: number;
   timer: NodeJS.Timeout | undefined;
   // messages: any;
@@ -73,6 +74,24 @@ export class DaitsuPlatform {
       // run the method to discover / register your devices as accessories
       this.discoverDevices();
     });
+
+    this.api.on('shutdown', () => {
+      if (this.timer) {
+        clearInterval(this.timer);
+      }
+      this.daitsuDevice?.dispose();
+      try {
+        this.socket.close();
+      } catch {
+        // socket already closed
+      }
+    });
+  }
+
+  private normalizeMac(mac: unknown): string {
+    return String(mac ?? '')
+      .toLowerCase()
+      .replace(/[^0-9a-f]/g, '');
   }
 
   broadcastScan() {
@@ -121,6 +140,10 @@ export class DaitsuPlatform {
         `scanCount: ${this.config.scanCount}, scanTimeout: ${this.config.scanTimeout}ms`,
     );
 
+    this.socket.on('error', (error) => {
+      this.log.error('[DISCOVERY] Socket error:', error);
+    });
+
     this.socket.bind(this.config.port, () => {
       this.log.info(
         `[DISCOVERY] UDP server successfully bound to port ${this.config.port}`,
@@ -136,22 +159,21 @@ export class DaitsuPlatform {
         );
 
         if (this.scanCount > this.config.scanCount && this.timer) {
-          this.log.info(
-            `[DISCOVERY] Scan finished. Completed ${this.scanCount} attempts without finding devices.`,
-          );
           clearInterval(this.timer);
+          if (!this.initializedDevice) {
+            this.log.warn(
+              `[DISCOVERY] Scan finished after ${this.scanCount} attempts without finding a device. ` +
+                `Check that scanAddress (${this.config.scanAddress}) is your LAN broadcast address.`,
+            );
+          }
         }
       }, this.config.scanTimeout);
-    });
-
-    this.socket.on('error', (error) => {
-      this.log.error('[DISCOVERY] Socket error:', error);
     });
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   handleMessage = (msg: Buffer, rinfo: any) => {
-    this.log.info(
+    this.log.debug(
       `[MESSAGE] Received message from ${rinfo.address}:${rinfo.port}`,
     );
     this.log.debug(`[MESSAGE] Raw message: ${msg.toString()}`);
@@ -179,14 +201,26 @@ export class DaitsuPlatform {
       this.log.debug('[MESSAGE] Decrypted pack:', pack);
 
       if (message.t === 'pack' && pack.t === 'dev') {
+        if (
+          this.config.mac &&
+          this.normalizeMac(pack.mac) !== this.normalizeMac(this.config.mac)
+        ) {
+          this.log.debug(
+            `[MESSAGE] Ignoring device ${pack.mac}: does not match configured mac ${this.config.mac}`,
+          );
+          return;
+        }
+        if (this.initializedDevice) {
+          return;
+        }
         this.log.info(
-          '[MESSAGE] Found device! Processing device registration...',
+          `[MESSAGE] Found device ${pack.mac} at ${rinfo.address}:${rinfo.port}`,
         );
         const deviceInfo = {
           ...pack,
           address: rinfo.address,
           port: rinfo.port,
-          name: this.config.platform,
+          name: this.config.name,
         };
         this.log.debug('[MESSAGE] Device info:', deviceInfo);
         this.registerDevice(deviceInfo);
@@ -252,9 +286,9 @@ export class DaitsuPlatform {
         '[REGISTER] Device successfully registered and initialized!',
       );
 
-      const daitsuDevice = new DaitsuATW(this, accessory, deviceConfig);
+      this.daitsuDevice = new DaitsuATW(this, accessory, deviceConfig);
       this.log.debug('[REGISTER] DaitsuATW instance created');
-      return daitsuDevice;
+      return this.daitsuDevice;
     } else {
       this.log.error('[REGISTER] Failed to create or retrieve accessory');
     }

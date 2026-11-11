@@ -52,6 +52,97 @@
         "type": "string",
         "description": "Optional MAC address to match a specific device (e.g. aa:bb:cc:dd:ee:ff)."
       },
+      "climateName": {
+        "title": "Climate Tile Name",
+        "type": "string",
+        "default": "Climate",
+        "description": "Name of the space heating/cooling thermostat in HomeKit."
+      },
+      "enableHotWater": {
+        "title": "Expose Hot Water (DHW) Thermostat",
+        "type": "boolean",
+        "default": true,
+        "description": "Adds a second thermostat for the domestic hot water tank."
+      },
+      "hotWaterName": {
+        "title": "Hot Water Tile Name",
+        "type": "string",
+        "default": "Hot Water",
+        "description": "Name of the hot water thermostat in HomeKit."
+      },
+      "outdoorTemperatureSensor": {
+        "title": "Expose Outdoor Temperature Sensor (experimental)",
+        "type": "boolean",
+        "default": false,
+        "description": "Adds a temperature sensor from the OutEnvTem field. Its unit has not been verified on ATW devices; enable diagnostics to check the raw value first."
+      },
+      "outdoorSensorName": {
+        "title": "Outdoor Sensor Name",
+        "type": "string",
+        "default": "Outdoor"
+      },
+      "heatingMin": {
+        "title": "Heating Water Setpoint Min (°C)",
+        "type": "integer",
+        "default": 20,
+        "description": "Lowest heating water outlet setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "heatingMax": {
+        "title": "Heating Water Setpoint Max (°C)",
+        "type": "integer",
+        "default": 60,
+        "description": "Highest heating water outlet setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "coolingMin": {
+        "title": "Cooling Water Setpoint Min (°C)",
+        "type": "integer",
+        "default": 7,
+        "description": "Lowest cooling water outlet setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "coolingMax": {
+        "title": "Cooling Water Setpoint Max (°C)",
+        "type": "integer",
+        "default": 25,
+        "description": "Highest cooling water outlet setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "hotWaterMin": {
+        "title": "Hot Water Setpoint Min (°C)",
+        "type": "integer",
+        "default": 30,
+        "description": "Lowest hot water tank setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "hotWaterMax": {
+        "title": "Hot Water Setpoint Max (°C)",
+        "type": "integer",
+        "default": 60,
+        "description": "Highest hot water tank setpoint.",
+        "minimum": 0,
+        "maximum": 80
+      },
+      "diagnostics": {
+        "title": "Diagnostics Logging",
+        "type": "boolean",
+        "default": false,
+        "description": "Logs every changed status field at info level. Useful to identify unknown parameters."
+      },
+      "extraStatusCols": {
+        "title": "Extra Status Columns",
+        "type": "array",
+        "items": {
+          "type": "string"
+        },
+        "description": "Additional status fields to request from the device and log (e.g. RmoHomTemHi, RmoHomTemLo, ColHtWter, HetHtWter, LefHom)."
+      },
       "defaultValue": {
         "title": "Default Device Values",
         "type": "object",
